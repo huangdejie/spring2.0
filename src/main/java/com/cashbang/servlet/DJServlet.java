@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -23,7 +24,12 @@ import java.util.regex.Pattern;
  */
 public class DJServlet extends HttpServlet {
 
-    private List<DJHandlerMapping> handlerMappins = new ArrayList<>();
+    /**
+     * 请求路径和方法关联
+     */
+    private List<DJHandlerMapping> handlerMappings = new ArrayList<>();
+
+    private Map<DJHandlerMapping,DJHandlerAdapter> handlerAdapters = new HashMap<>();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -48,6 +54,16 @@ public class DJServlet extends HttpServlet {
      */
     private void initStrategies(DJApplicationContext context){
         initHandlerMapping(context);
+        initHandlerAdapter();
+    }
+
+    /**
+     * 初始化handlerAdapter
+     */
+    private void initHandlerAdapter() {
+        for (DJHandlerMapping handlerMapping : handlerMappings) {
+            handlerAdapters.put(handlerMapping,new DJHandlerAdapter());
+        }
     }
 
     /**
@@ -72,7 +88,7 @@ public class DJServlet extends HttpServlet {
                 String finalUrl = url+("\\"+methodRequestMapping.value()).replaceAll("\\+","\\");
                 Pattern pattern = Pattern.compile(finalUrl.replaceAll("\\*",".*"));
                 DJHandlerMapping handlerMapping = new DJHandlerMapping(pattern,beanWrapper,method);
-                handlerMappins.add(handlerMapping);
+                handlerMappings.add(handlerMapping);
 
             }
         }
