@@ -18,6 +18,10 @@ public class DJApplicationContext {
     private Map<String,Object> originalInstanceMap = new HashMap<>();
     private Map<String,BeanWrapper> beanWrapperMap = new HashMap<>();
 
+    public Map<String,BeanWrapper> getBeanWrapper(){
+        return beanWrapperMap;
+    }
+
     public DJApplicationContext(String... configurations){
         beanDefinitionReader = new BeanDefinitionReader(configurations);
         List<BeanDefinition> beanDefinitionList = beanDefinitionReader.getBeanDefinition();

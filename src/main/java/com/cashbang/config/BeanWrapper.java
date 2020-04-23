@@ -1,5 +1,7 @@
 package com.cashbang.config;
 
+import java.util.regex.Pattern;
+
 /**
  * @Author: huangdj
  * @Date: 2020/4/23
@@ -29,4 +31,6 @@ public class BeanWrapper {
     public void setWrapperClass(Class wrapperClass) {
         this.wrapperClass = wrapperClass;
     }
+
+
 }
