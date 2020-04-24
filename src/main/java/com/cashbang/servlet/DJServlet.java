@@ -97,8 +97,7 @@ public class DJServlet extends HttpServlet {
 
     @Override
     public void init(ServletConfig config) throws ServletException {
-        String configFileName = config.getInitParameter("configurations");
-        DJApplicationContext applicationContext = new DJApplicationContext(configFileName);
+        DJApplicationContext applicationContext = new DJApplicationContext(config.getInitParameter("configurations"));
         initStrategies(applicationContext);
     }
 

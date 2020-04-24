@@ -29,7 +29,6 @@ public class DJApplicationContext {
         try {
             doRegisterBeanDefinition(beanDefinitionList);
             doAutowired();
-            String a = "";
         }catch (Exception e){
             e.printStackTrace();
         }

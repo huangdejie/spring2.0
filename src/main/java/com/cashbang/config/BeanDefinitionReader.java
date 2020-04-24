@@ -31,7 +31,6 @@ public class BeanDefinitionReader {
     public BeanDefinitionReader(String... configurations){
         doReader(configurations[0]);
         doInitBeanClassName(propertiesContext.getProperty("scan.package"));
-        String a = "";
     }
 
     /**
