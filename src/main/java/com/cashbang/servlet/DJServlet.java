@@ -11,12 +11,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.io.File;
 
 /**
  * @Author: huangdj
@@ -27,18 +26,73 @@ public class DJServlet extends HttpServlet {
     /**
      * 请求路径和方法关联
      */
-    private List<DJHandlerMapping> handlerMappings = new ArrayList<>();
+    private List<DJHandlerMapping> handlerMappings = new ArrayList<DJHandlerMapping>();
 
-    private Map<DJHandlerMapping,DJHandlerAdapter> handlerAdapters = new HashMap<>();
+    private Map<DJHandlerMapping,DJHandlerAdapter> handlerAdapters = new HashMap<DJHandlerMapping,DJHandlerAdapter>();
+
+    private List<DJViewResolver> viewResolvers = new ArrayList<DJViewResolver>();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doGet(req, resp);
+        doPost(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
+        try {
+            doDispatch(req,resp);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void doDispatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        DJHandlerMapping handlerMapping = getHandlerMapping(req);
+        if(handlerMapping == null){
+            processDispatcherResult(req,resp,new DJModelAndView("404"));
+        }
+        DJHandlerAdapter handlerAdapter = handlerAdapters.get(handlerMapping);
+        DJModelAndView modelAndView = handlerAdapter.handler(req,resp,handlerMapping);
+        processDispatcherResult(req,resp,modelAndView);
+
+    }
+
+    private void processDispatcherResult(HttpServletRequest req, HttpServletResponse resp, DJModelAndView modelAndView) {
+        if(modelAndView == null){
+            return;
+        }
+        if(viewResolvers.isEmpty()){
+            return;
+        }
+
+        for (DJViewResolver viewResolver:viewResolvers){
+            DJView view = viewResolver.resolveViewName(modelAndView.getViewName());
+            try {
+                view.render(modelAndView.getModel(),req,resp);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+
+    }
+
+
+    private DJHandlerMapping getHandlerMapping(HttpServletRequest req) {
+        if(handlerMappings.isEmpty()){
+            return null;
+        }
+        String url = req.getRequestURI();
+        System.out.println("*******请求的路径为"+url);
+        String contextPath = req.getContextPath();
+        url = url.replaceAll(contextPath,"").replaceAll("/+","/");
+        for (DJHandlerMapping handlerMapping : handlerMappings) {
+            if(!handlerMapping.getPattern().matcher(url).matches()){
+                continue;
+            }
+            return handlerMapping;
+        }
+        return null;
     }
 
     @Override
@@ -55,6 +109,16 @@ public class DJServlet extends HttpServlet {
     private void initStrategies(DJApplicationContext context){
         initHandlerMapping(context);
         initHandlerAdapter();
+        initViewResolvers(context);
+    }
+
+    private void initViewResolvers(DJApplicationContext context) {
+        String templateRoot = context.getConfig().getProperty("templateRoot");
+        String templateRootPath = this.getClass().getClassLoader().getResource(templateRoot).getFile();
+        File templateRootDir = new File(templateRootPath);
+        for (File file : templateRootDir.listFiles()) {
+            this.viewResolvers.add(new DJViewResolver(templateRoot));
+        }
     }
 
     /**
@@ -78,16 +142,16 @@ public class DJServlet extends HttpServlet {
                 continue;
             }
             DJRequestMapping requestMapping = (DJRequestMapping) beanWrapper.getWrapperClass().getAnnotation(DJRequestMapping.class);
-            String url = ("\\"+requestMapping.value()).replaceAll("\\+","\\");
+            String url = ("/"+requestMapping.value()).replaceAll("/+","/");
             Method[] methods = beanWrapper.getWrapperClass().getMethods();
             for (Method method : methods) {
                 if(!method.isAnnotationPresent(DJRequestMapping.class)){
                     continue;
                 }
                 DJRequestMapping methodRequestMapping = method.getAnnotation(DJRequestMapping.class);
-                String finalUrl = url+("\\"+methodRequestMapping.value()).replaceAll("\\+","\\");
+                String finalUrl = url+("/"+methodRequestMapping.value()).replaceAll("/+","/");
                 Pattern pattern = Pattern.compile(finalUrl.replaceAll("\\*",".*"));
-                DJHandlerMapping handlerMapping = new DJHandlerMapping(pattern,beanWrapper,method);
+                DJHandlerMapping handlerMapping = new DJHandlerMapping(pattern,beanWrapper.getWrapperInstance(),method);
                 handlerMappings.add(handlerMapping);
 
             }

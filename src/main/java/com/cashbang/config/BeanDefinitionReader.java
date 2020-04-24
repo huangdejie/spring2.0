@@ -22,7 +22,7 @@ public class BeanDefinitionReader {
     /**
      * 所要扫描bean的class名称
      */
-    private List<String> beanClassNameList = new ArrayList<>();
+    private List<String> beanClassNameList = new ArrayList<String>();
     /**
      * 配置文件
      */
@@ -39,8 +39,8 @@ public class BeanDefinitionReader {
      * @return
      */
     public List<BeanDefinition> getBeanDefinition(){
-        List<BeanDefinition> beanDefinitionList = new ArrayList<>();
-        List<String> beanNameList = new ArrayList<>();
+        List<BeanDefinition> beanDefinitionList = new ArrayList<BeanDefinition>();
+        List<String> beanNameList = new ArrayList<String>();
         try {
             for (String className : beanClassNameList) {
                 Class clazz = Class.forName(className);

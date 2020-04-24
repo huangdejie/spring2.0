@@ -12,6 +12,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String sayHello(String name) {
-        return null;
+        return name+"";
     }
 }

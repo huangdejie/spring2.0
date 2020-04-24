@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @Author: huangdj
@@ -14,9 +15,9 @@ import java.util.Map;
 public class DJApplicationContext {
 
     private BeanDefinitionReader beanDefinitionReader;
-    private Map<String,BeanDefinition> beanDefinitionMap = new HashMap<>();
-    private Map<String,Object> originalInstanceMap = new HashMap<>();
-    private Map<String,BeanWrapper> beanWrapperMap = new HashMap<>();
+    private Map<String,BeanDefinition> beanDefinitionMap = new HashMap<String,BeanDefinition>();
+    private Map<String,Object> originalInstanceMap = new HashMap<String,Object>();
+    private Map<String,BeanWrapper> beanWrapperMap = new HashMap<String,BeanWrapper>();
 
     public Map<String,BeanWrapper> getBeanWrapper(){
         return beanWrapperMap;
@@ -116,4 +117,7 @@ public class DJApplicationContext {
     }
 
 
+    public Properties getConfig() {
+        return beanDefinitionReader.getPropertiesContext();
+    }
 }
